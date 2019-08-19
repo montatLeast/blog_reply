@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <link type="text/css" rel="stylesheet" href="ext-3.3.0/resources/css/ext-all.css" />
+    <link type="text/css" rel="stylesheet" href="css/icon.css" />
+    <script language="javascript" src="ext-3.3.0/adapter/ext/ext-base.js"></script>
+    <script language="javascript" src="ext-3.3.0/ext-all.js"></script>
+    <script language="javascript" src="ext-3.3.0/src/locale/ext-lang-zh_CN.js"></script>
+
+    <script type="text/javascript">
+        Ext.onReady(function () {
+            var tpl = new Ext.XTemplate([
+                '<table cellpadding=0 cellspacing=0 border=1 width=400px>',
+                '<tr><td colspan=2 align=center><b>{name}的个人信息</b></td></tr>',
+                '<tr><td>姓名：</td><td>{name}</td></tr>',
+                '<tr><td>公司：</td><td>{company}</td></tr>',
+                '<tr><td>年龄：</td><td>{age}</td></tr>',
+                '</td></tr>',
+                '</table>'
+            ]);
+
+            var data_1 = {};
+
+            var contextmenu = new Ext.menu.Menu({
+                items: [
+                    {
+                        text: 'Edit',
+                        menu: new Ext.menu.Menu({
+                            items: [
+                                {
+                                    text: 'Reset',
+                                    handler: function () {
+                                        Ext.getCmp('textarea').setValue("");
+                                    },
+                                }
+                            ]
+                        })
+                    },
+                    {
+                        text: 'Insert',
+                        menu: new Ext.menu.Menu({
+                            items: [
+                                {
+                                    text: 'Table',
+                                    handler: function () {
+                                        pop_window.show();
+                                    },
+                                }
+                            ]
+                        })
+                    },
+                ],
+            });
+            tpl.compile();
+            var progressBar = new Ext.ProgressBar({
+                width: 300,
+                text: "等待输入中...",
+                hidden: true
+            });
+            var task = new Ext.util.DelayedTask(function () {
+                progressBar.hide();
+                Ext.Msg.alert('success', '您已成功回复！');
+            });
+            var reply_panel = new Ext.Panel({
+                id: 'reply_panel',
+                tbar: [
+                    {
+                        text: 'Edit',
+                        menu: new Ext.menu.Menu({
+                            items: [
+                                {
+                                    text: 'Reset',
+                                    handler: function () {
+                                        Ext.getCmp('textarea').setValue("");
+                                    },
+                                }
+                            ]
+                        })
+                    },
+                    {
+                        text: 'Insert',
+                        menu: new Ext.menu.Menu({
+                            items: [
+                                {
+                                    text: 'Table',
+                                    handler: function () {
+                                        pop_window.show();
+                                    },
+                                }
+                            ]
+                        })
+                    },
+                ],
+                items: [{
+                    id: 'textarea',
+                    xtype: 'textarea',
+                    height: 200,
+                    width: 600,
+                    enableKeyEvents: true,
+                    listeners: {
+                        keyup: function (t, e) {
+                            var content = t.getValue().trim();
+                            content = content.replace(/[\r\n]/g, "");
+                            console.log(content);
+                            if (content === "") {
+                                Ext.getCmp('reply_button').setDisabled(true);
+                            } else {
+                                Ext.getCmp('reply_button').setDisabled(false);
+                            }
+                        },
+                    }
+                },],
+                listeners: {
+                    render: function (p) {
+                        p.getEl().on('contextmenu', function (e) {
+                            e.preventDefault();
+                            contextmenu.showAt(e.getXY());
+                        });
+                    },
+                }
+            });
+            var pop_window = new Ext.Window({
+                width: 300,
+                height: 180,
+                title: '生成表格',
+                items: [{
+                    xtype: 'form',
+                    items: [{
+                        id: 'name',
+                        xtype: 'field',
+                        fieldLabel: '姓名'
+                    }, {
+                        id: 'company',
+                        xtype: 'field',
+                        fieldLabel: '公司'
+                    }, {
+                        id: 'age',
+                        xtype: 'field',
+                        fieldLabel: '年龄'
+                    }]
+                }
+                ],
+                buttons: [{
+                    text: '提交',
+                    handler: function () {
+                        data_1.name = Ext.getCmp('name').getValue();
+                        data_1.company = Ext.getCmp('company').getValue();
+                        data_1.age = Ext.getCmp('age').getValue();
+                        pop_window.hide();
+                        tpl.append('template_text', data_1);
+                        data_1 = {};
+                    }
+                }]
+            })
+            var window = new Ext.Window({
+                width: 600,
+                height: 400,
+                title: 'Blog',
+                hidden: false,
+                autoScroll: true,
+                items: [reply_panel, progressBar, {
+                    id: 'template_text',
+                    xtype:'panel'
+                }],
+                buttons: [
+                    {
+                        id: 'reply_button',
+                        xtype: 'button',
+                        text: 'reply',
+                        disabled: true,
+                        handler: function () {
+                            progressBar.show();
+                            progressBar.wait({
+                                interval: 100,
+                                duration: 3000,
+                                increment: 30
+                            });
+                            task.delay(3000);
+                        }
+                    }
+                ]
+            });
+        });
+    </script>
+
+</head>
+
+<style type="text/css">
+</style>
+
+<body>
+    <div id="test"></div>
+</body>
+
+</html>
